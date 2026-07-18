@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { MapView } from "./components/MapView";
 import { ReasoningPanel } from "./components/ReasoningPanel";
+import { TipsFeed } from "./components/TipsFeed";
 import { StatusBar } from "./components/StatusBar";
 import { CommandConsole } from "./components/voice/CommandConsole";
 import { Toaster } from "./components/Toaster";
@@ -100,6 +101,7 @@ export default function App() {
         <aside className="flex w-[380px] shrink-0 flex-col border-l bg-card">
           <div className="min-h-0 flex-1 overflow-y-auto">
             <ReasoningPanel caseId={activeCase._id} />
+            <TipsFeed caseId={activeCase._id} />
           </div>
           <div className="border-t">
             <CommandConsole caseId={activeCase._id} />

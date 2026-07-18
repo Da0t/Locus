@@ -5,12 +5,7 @@ import { useState } from "react";
 import { Marker, Popup } from "react-map-gl/mapbox";
 import type { Doc } from "../../../convex/_generated/dataModel";
 import { clamp } from "../../../convex/lib/geo";
-
-function simTime(min: number): string {
-  return `T+${Math.floor(min / 60)}h${Math.floor(min % 60)
-    .toString()
-    .padStart(2, "0")}m`;
-}
+import { simTime } from "../../lib/format";
 
 export function TipMarkers({ tips }: { tips: Doc<"tips">[] }) {
   const [hovered, setHovered] = useState<Doc<"tips"> | null>(null);
