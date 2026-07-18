@@ -3,16 +3,24 @@
 // declarative — Convex reactivity drives the data props; no manual map
 // mutation, so per-tick updates never flicker.
 import { useMemo, useRef, useState } from "react";
-import Map, { Layer, Source, type MapRef } from "react-map-gl/mapbox";
+import Map, {
+  Layer,
+  Source,
+  type MapLayerMouseEvent,
+  type MapRef,
+} from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
+import { latLngToCell } from "../../convex/lib/geo";
 import { claimedFC, heatFC, ringFC, searchedFC, terrainFC } from "./map/geojson";
 import { TERRAIN_COLORS, teamColor } from "./map/palette";
 import { LkpMarker } from "./map/LkpMarker";
 import { TeamMarkers } from "./map/TeamMarkers";
 import { TipMarkers } from "./map/TipMarkers";
+import { TeamRoster } from "./map/TeamRoster";
+import { errorMessage, toast } from "../lib/toast";
 
 const TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
 
@@ -21,6 +29,8 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
   const teams = useQuery(api.teams.list, { caseId: activeCase._id });
   const gridStates = useQuery(api.teams.gridStates, { caseId: activeCase._id });
   const tips = useQuery(api.tips.list, { caseId: activeCase._id });
+
+  const claimGrid = useMutation(api.teams.claimGrid);
 
   const mapRef = useRef<MapRef>(null);
   const [mapMoving, setMapMoving] = useState(false);
@@ -76,6 +86,16 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
     );
   }
 
+  // The claim interaction: armed team + grid cell click → claimGrid.
+  // A lost race throws — that message IS the contention demo; show it big.
+  const onMapClick = (e: MapLayerMouseEvent) => {
+    if (!selectedTeam || activeCase.status === "found") return;
+    const cell = latLngToCell(bounds, gridSize, e.lngLat.lat, e.lngLat.lng);
+    claimGrid({ teamId: selectedTeam, x: cell.x, y: cell.y })
+      .then(() => setSelectedTeam(null))
+      .catch((err: unknown) => toast(errorMessage(err)));
+  };
+
   return (
     <Map
       ref={mapRef}
@@ -88,6 +108,8 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
         fitBoundsOptions: { padding: 40 },
       }}
       mapStyle="mapbox://styles/mapbox/dark-v11"
+      cursor={selectedTeam ? "crosshair" : "grab"}
+      onClick={onMapClick}
       onMoveStart={() => setMapMoving(true)}
       onMoveEnd={() => setMapMoving(false)}
     >
@@ -191,6 +213,12 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
         selectedId={selectedTeam}
         onSelect={(id) => setSelectedTeam((cur) => (cur === id ? null : id))}
         mapMoving={mapMoving}
+      />
+
+      <TeamRoster
+        teams={teams ?? []}
+        selectedId={selectedTeam}
+        onSelect={(id) => setSelectedTeam((cur) => (cur === id ? null : id))}
       />
     </Map>
   );

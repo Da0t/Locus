@@ -6,6 +6,7 @@ import { MapView } from "./components/MapView";
 import { ReasoningPanel } from "./components/ReasoningPanel";
 import { StatusBar } from "./components/StatusBar";
 import { CommandConsole } from "./components/voice/CommandConsole";
+import { Toaster } from "./components/Toaster";
 import { Button } from "./components/ui/button";
 
 function Wordmark() {
@@ -105,6 +106,7 @@ export default function App() {
           </div>
         </aside>
       </div>
+      <Toaster />
     </main>
   );
 }
