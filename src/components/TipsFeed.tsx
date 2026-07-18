@@ -11,6 +11,8 @@ export function TipsFeed({ caseId }: { caseId: Id<"cases"> }) {
   const tips = useQuery(api.tips.list, { caseId });
   if (!tips) return null;
   const sorted = [...tips].sort((a, b) => b._creationTime - a._creationTime);
+  // Lookup for showing a snippet of the tip a report corroborates (W1).
+  const byId = new Map(tips.map((t) => [t._id, t]));
 
   return (
     <div className="space-y-2 border-t p-4">
@@ -27,7 +29,10 @@ export function TipsFeed({ caseId }: { caseId: Id<"cases"> }) {
           No tips yet — report one through the console.
         </p>
       )}
-      {sorted.map((tip) => (
+      {sorted.map((tip) => {
+        const source = tip.corroborates ? byId.get(tip.corroborates) : undefined;
+        const snippet = source?.text.replace(/\s+/g, " ").trim();
+        return (
         <div
           key={tip._id}
           style={{
@@ -45,6 +50,18 @@ export function TipsFeed({ caseId }: { caseId: Id<"cases"> }) {
             </span>
           </div>
           <p className="mb-1.5 text-[11px] leading-snug">{tip.text}</p>
+          {tip.corroborates && (
+            <p className="mb-1.5 font-mono text-[9px] leading-snug text-amber-500">
+              ↳ corroborates earlier report
+              {snippet && (
+                <span className="text-amber-500/70">
+                  {" — “"}
+                  {snippet.length > 42 ? `${snippet.slice(0, 42)}…` : snippet}
+                  {"”"}
+                </span>
+              )}
+            </p>
+          )}
           <div className="flex items-center gap-2">
             <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-muted-foreground">
               Cred
@@ -60,7 +77,8 @@ export function TipsFeed({ caseId }: { caseId: Id<"cases"> }) {
             </span>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
