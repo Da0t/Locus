@@ -40,6 +40,15 @@ export const claimGrid = mutation({
     if (grid.claimedBy && grid.claimedBy !== teamId) {
       throw new Error("Cell already claimed by another team");
     }
+    // Releasing an orphaned claim: a team switching to a new cell must give
+    // up its old one, or that cell stays claimed forever (invisible to the
+    // planner, un-claimable by others).
+    if (team.assignedGridId && team.assignedGridId !== grid._id) {
+      const oldGrid = await ctx.db.get(team.assignedGridId);
+      if (oldGrid && oldGrid.claimedBy === teamId) {
+        await ctx.db.patch(oldGrid._id, { claimedBy: undefined });
+      }
+    }
     await ctx.db.patch(grid._id, { claimedBy: teamId });
     await ctx.db.patch(teamId, { assignedGridId: grid._id, status: "enroute" });
     return grid._id;
