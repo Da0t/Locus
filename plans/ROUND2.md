@@ -15,6 +15,24 @@ touches `convex/schema.ts`, `convex/profiles.ts`, or `convex/lib/**`.
 | `w5-debrief` | `plans/W5.md` | After-action debrief generated on "found" via the gateway | Respan |
 | `w6-presence` | `plans/W6.md` | Presence component: coordinators online | Convex |
 | `w7-deploy-demo` | `plans/W7.md` | Cloud deploy (Convex + Vercel), env, rehearsal, fallback recording | demo |
+| `w8-tip-attraction` | `plans/W8.md` | **BUG (top priority): tips must move probability mass + teams** — walker anchors | core |
+| `w9-visual-polish` | `plans/W9.md` | App-shell visual pass (everything around the map) | demo |
+
+## 7-person assignment (9 lanes, small ones bundled)
+
+| Person | Lanes | Note |
+|---|---|---|
+| P1 | **W8** | the bug fix — highest priority, merge FIRST |
+| P2 | W1 | vector corroboration (both sponsors) |
+| P3 | W4 | map legend + readability |
+| P4 | W9 | shell visual polish |
+| P5 | W2 + W3 | two small Convex checklist wins |
+| P6 | W5 | debrief (closing beat) |
+| P7 (Dat) | W7 | deploy + rehearsal — needs account access |
+
+W6 (presence) is the cut line: first person finished grabs it; unstarted
+at T-15 = skipped. New merge order: **W8 → W1 → W2 → W3 → W4 → W5 → (W6)
+→ W9 → W7 last** (deploy after everything is in).
 
 Rules (same as round 1, tighter clock):
 - Bootstrap your AI with: read `plans/W<N>.md` + `docs/CONTRACTS.md` +
