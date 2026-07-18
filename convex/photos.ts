@@ -21,6 +21,28 @@ export const attach = mutation({
   },
 });
 
+// Stage pre-flight helper: resetDemo wipes table rows but NOT _storage, so
+// the uploaded portrait survives resets. This re-binds the newest stored
+// file to the active case in one no-arguments command:
+//   npx convex run photos:attachLatest
+export const attachLatest = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const kase = await ctx.db
+      .query("cases")
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .first();
+    if (!kase) return "no active case";
+    const latest = await ctx.db.system
+      .query("_storage")
+      .order("desc")
+      .first();
+    if (!latest) return "no stored files";
+    await ctx.db.patch(kase._id, { photoStorageId: latest._id });
+    return `attached ${latest._id}`;
+  },
+});
+
 // Signed URL for the current case photo, or null if none attached yet.
 // getUrl() also returns null if the stored file is gone.
 export const url = query({

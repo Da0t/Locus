@@ -26,12 +26,18 @@ const GRID = 24;
 // The last-known point: Pantoll trailhead, where Maya parked at 7am.
 const PANTOLL = { lat: 37.9045, lng: -122.6045 };
 
-// Demo ground truth — just off the trail near the creek crossing, one cell
-// downhill (SW) of the fire-road junction. It sits on a TRAIL cell that is
-// adjacent to the creek: a trail-stream intersection, which Koester/Jacobs
-// research (and Person A's TERRAIN_ATTRACTORS) rate the single hottest place
-// to look for a lost hiker. This is a pitch line, not decoration.
-const HIDDEN_TRUE = { lat: 37.9182, lng: -122.6078 }; // -> cell (14, 14)
+// Where the Matt Davis trail fords the creek, below the fire-road junction —
+// the trail-stream intersection Koester/Jacobs rate the hottest single spot.
+// Trail/creek geometry anchors here (NOT on the hidden truth).
+const TRAIL_FORD = { lat: 37.9182, lng: -122.6078 }; // -> cell (14, 14)
+
+// Demo ground truth — one cell OFF-trail, creek-side, ~300m west of the
+// ford: cell (13, 14). Deliberately NOT the hottest prior cell: with truth
+// on the ford itself the first blind assignment finds her in ~35s (measured
+// on cloud) before the tip arc even lands. Off-trail, the teams grind the
+// hot trail cells first and it's the TIPS that pin her — which is the
+// story: "the prior narrows it; the intel finds her."
+const HIDDEN_TRUE = { lat: 37.9184, lng: -122.6112 }; // -> cell (13, 14)
 
 // ---------------------------------------------------------------------------
 // Terrain authoring. We author features as lat/lng polylines and rasterize
@@ -76,7 +82,7 @@ const FEATURES: { kind: Kind; lines: LL[][] }[] = [
         { lat: 37.908, lng: -122.607 },
         { lat: 37.912, lng: -122.609 },
         { lat: 37.916, lng: -122.61 },
-        HIDDEN_TRUE, // trail passes through the hidden cell (14,14)
+        TRAIL_FORD, // trail passes through the ford cell (14,14)
         { lat: 37.9195, lng: -122.6075 }, // fire-road junction, just uphill
         { lat: 37.922, lng: -122.607 }, // north creek
       ],
@@ -88,7 +94,7 @@ const FEATURES: { kind: Kind; lines: LL[][] }[] = [
     kind: "trail",
     lines: [
       [
-        HIDDEN_TRUE,
+        TRAIL_FORD,
         { lat: 37.916, lng: -122.611 },
         { lat: 37.9125, lng: -122.6135 },
         { lat: 37.908, lng: -122.617 },
@@ -203,7 +209,11 @@ export const seedDemo = mutation({
       hiddenTrueLat: HIDDEN_TRUE.lat,
       hiddenTrueLng: HIDDEN_TRUE.lng,
       teams: [
-        { name: "Team Alpha", lat: PANTOLL.lat, lng: PANTOLL.lng },
+        // Alpha staged at the Panoramic pullout SOUTH of the LKP (not on it):
+        // stage pacing — teams starting on top of the hot trail cells can
+        // reach the truth cell before the tip arc even lands (measured 35s
+        // hands-off found on 2026-07-18, vs the 60-100s stage window).
+        { name: "Team Alpha", lat: 37.8985, lng: -122.6035 },
         { name: "Team Bravo", lat: 37.9, lng: -122.62 },
         { name: "Team Charlie", lat: 37.912, lng: -122.585 },
       ],
@@ -216,7 +226,7 @@ export const seedDemo = mutation({
       // TUNE at integration (Task 5): with Person A's real engine, target
       // hands-off Run->found at 75-100s. Too early -> lower toward 3; too late
       // -> raise toward 6. Retime after every engine change.
-      minutesPerTick: 4,
+      minutesPerTick: 2, // 4 -> 35s found, 3 -> 46s; 2 targets the 60-90s stage window (cloud ~1.6s/tick)
       initialSimMin: 180, // already missing 3 hours at case open
     });
     return caseId as import("./_generated/dataModel").Id<"cases">;
@@ -264,27 +274,11 @@ export const TIP_SCRIPT: ScriptedTip[] = [
     source: "scripted",
   },
   {
-    afterSec: 12,
-    text: "911 caller heard someone calling for help down by the creek crossing roughly 40 minutes ago.",
-    lat: 37.9178,
-    lng: -122.6103, // ~230m W of truth, at the creek ford
-    observedAtSimMinOffset: 40,
-    source: "scripted",
-  },
-  {
-    afterSec: 12,
-    text: "Two backpackers saw a woman matching Maya sitting off-trail near the creek below the junction, favoring one ankle, about 25 minutes ago.",
-    lat: 37.917,
-    lng: -122.6092, // ~180m SW of truth — the credible one, hiker pulls ahead
-    observedAtSimMinOffset: 25,
-    source: "scripted",
-  },
-  {
-    afterSec: 11,
-    // RED HERRING. Deliberately implausible: a fresh sighting 3km downhill at
-    // the highway, which a hiker missing on foot could not reach in 10 minutes.
-    // Wording flags the impossibility so Person C's judge scores credibility
-    // low and the heatmap does NOT chase it south.
+    afterSec: 8,
+    // RED HERRING, deliberately EARLY (cumulative ~21s) so the judge's
+    // discount is visible on stage BEFORE the found moment (~45-60s) —
+    // measured runs finish before a late herring would land. Implausible on
+    // purpose: 3km downhill in 10 minutes on foot.
     text: "Gas-station clerk on Panoramic Highway swears a woman just like Maya bought water 10 minutes ago — but that's over 3km downhill from her last position.",
     lat: 37.892,
     lng: -122.6, // far south, ~3km off truth
@@ -292,10 +286,26 @@ export const TIP_SCRIPT: ScriptedTip[] = [
     source: "scripted",
   },
   {
-    afterSec: 11,
-    text: "Team Alpha radios a fresh boot print and a dropped water bottle just uphill of the creek crossing, minutes old.",
-    lat: 37.9195,
-    lng: -122.6065, // ~180m NE of truth — final tight corroboration
+    afterSec: 10,
+    text: "911 caller heard someone calling for help down by the creek crossing roughly 40 minutes ago.",
+    lat: 37.9178,
+    lng: -122.6103, // ~120m SE of truth, at the creek ford
+    observedAtSimMinOffset: 40,
+    source: "scripted",
+  },
+  {
+    afterSec: 10,
+    text: "Two backpackers saw a woman matching Maya sitting off-trail near the creek below the junction, favoring one ankle, about 25 minutes ago.",
+    lat: 37.917,
+    lng: -122.6092, // ~230m SE of truth — the credible one, hiker pulls ahead
+    observedAtSimMinOffset: 25,
+    source: "scripted",
+  },
+  {
+    afterSec: 10,
+    text: "Team Alpha radios a fresh boot print and a dropped water bottle just west of the creek crossing, minutes old.",
+    lat: 37.9192,
+    lng: -122.6098, // ~150m NE of truth — final tight corroboration
     observedAtSimMinOffset: 15,
     source: "scripted",
   },
