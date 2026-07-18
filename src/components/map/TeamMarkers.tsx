@@ -29,7 +29,7 @@ export function TeamMarkers({
             longitude={team.lng}
             anchor="center"
             style={{
-              transition: mapMoving ? "none" : "transform 1.4s linear",
+              transition: mapMoving ? "none" : "transform 0.8s linear",
               zIndex: selected ? 4 : 2,
             }}
           >

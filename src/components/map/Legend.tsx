@@ -28,12 +28,18 @@ function Fill({ color }: { color: string }) {
   );
 }
 
+// Collapsed to a pill by default; hover (or touch-focus) expands it. The
+// map stays clean, and the vocabulary is one glance away when needed.
 export function Legend() {
   return (
-    <div className="absolute bottom-3 left-3 z-10 flex flex-col gap-1.5 rounded-md border border-white/15 bg-black/70 px-3 py-2.5 font-mono shadow-lg backdrop-blur">
+    <div
+      tabIndex={0}
+      className="group glass-chip absolute bottom-4 left-4 z-10 px-3 py-2 font-mono"
+    >
       <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/60">
         Legend
       </span>
+      <div className="flex max-h-0 max-w-0 flex-col gap-1.5 overflow-hidden opacity-0 transition-all duration-200 ease-out group-focus-within:mt-1.5 group-focus-within:max-h-96 group-focus-within:max-w-56 group-focus-within:opacity-100 group-hover:mt-1.5 group-hover:max-h-96 group-hover:max-w-56 group-hover:opacity-100">
       <Row swatch={<Fill color={TERRAIN_COLORS.trail} />} label="Trail" />
       <Row swatch={<Fill color={TERRAIN_COLORS.road} />} label="Road" />
       <Row swatch={<Fill color={TERRAIN_COLORS.water} />} label="Creek" />
@@ -83,6 +89,7 @@ export function Legend() {
       <span className="mt-1 max-w-44 border-t border-white/10 pt-1.5 text-[9px] leading-relaxed text-white/45">
         select a team, then click a cell to task it — press / to speak
       </span>
+      </div>
     </div>
   );
 }

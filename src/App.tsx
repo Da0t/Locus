@@ -61,22 +61,24 @@ export default function App() {
   }
   if (activeCase === null) {
     return (
-      <main className="flex h-screen flex-col items-center justify-center gap-6 bg-background">
-        <div className="text-center">
-          <h1 className="text-5xl font-black tracking-[0.35em]">
-            LOCUS<span className="text-primary">.</span>
-          </h1>
-          <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
-            Search &amp; Rescue Command
-          </p>
+      <main className="flex h-screen flex-col items-center justify-center bg-background">
+        <div className="glass flex flex-col items-center gap-6 px-16 py-12">
+          <div className="text-center">
+            <h1 className="text-5xl font-black tracking-[0.35em]">
+              LOCUS<span className="text-primary">.</span>
+            </h1>
+            <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.3em] text-muted-foreground">
+              Search &amp; Rescue Command
+            </p>
+          </div>
+          <p className="text-sm text-muted-foreground">No active case.</p>
+          <Button
+            className="font-mono text-xs font-bold uppercase tracking-[0.18em]"
+            onClick={() => void seedDemo()}
+          >
+            Open demo case
+          </Button>
         </div>
-        <p className="text-sm text-muted-foreground">No active case.</p>
-        <Button
-          className="font-mono text-xs font-bold uppercase tracking-[0.18em]"
-          onClick={() => void seedDemo()}
-        >
-          Open demo case
-        </Button>
       </main>
     );
   }
@@ -84,11 +86,21 @@ export default function App() {
   const found = activeCase.status === "found";
 
   return (
-    <main className="flex h-screen flex-col bg-background">
-      <header className="flex items-center justify-between gap-6 border-b bg-card px-4 py-2">
+    <main className="relative h-screen overflow-hidden bg-background">
+      {/* Full-bleed live map; every control floats over it on glass. */}
+      <div className="absolute inset-0">
+        <MapView activeCase={activeCase} />
+      </div>
+      {/* Edge vignette: gives the floating glass something to sit "in". */}
+      <div
+        className="pointer-events-none absolute inset-0 z-10"
+        style={{ boxShadow: "inset 0 0 140px 24px rgb(0 0 0 / 0.55)" }}
+      />
+
+      <header className="glass-strong absolute inset-x-4 top-4 z-20 flex items-center justify-between gap-6 px-5 py-2">
         <div className="flex min-w-0 items-center gap-5">
           <Wordmark />
-          <div className="h-8 w-px shrink-0 bg-border" />
+          <div className="h-8 w-px shrink-0 bg-white/10" />
           <SubjectPhoto caseId={activeCase._id} />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -116,20 +128,17 @@ export default function App() {
           }
         />
       </header>
-      <div className="flex min-h-0 flex-1">
-        <div className="relative min-w-0 flex-1">
-          <MapView activeCase={activeCase} />
+
+      <aside className="absolute bottom-4 right-4 top-[80px] z-20 flex w-[372px] flex-col gap-3">
+        <div className="glass min-h-0 flex-1 overflow-y-auto">
+          <ReasoningPanel caseId={activeCase._id} />
+          <TipsFeed caseId={activeCase._id} />
         </div>
-        <aside className="flex w-[380px] shrink-0 flex-col border-l bg-card">
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <ReasoningPanel caseId={activeCase._id} />
-            <TipsFeed caseId={activeCase._id} />
-          </div>
-          <div className="border-t">
-            <CommandConsole caseId={activeCase._id} />
-          </div>
-        </aside>
-      </div>
+        <div className="glass-strong shrink-0">
+          <CommandConsole caseId={activeCase._id} />
+        </div>
+      </aside>
+
       <FoundOverlay activeCase={activeCase} />
       <Toaster />
     </main>

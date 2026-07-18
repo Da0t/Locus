@@ -16,7 +16,8 @@ export function TeamRoster({
   if (teams.length === 0) return null;
 
   return (
-    <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
+    // top-24 clears the floating glass header.
+    <div className="absolute left-4 top-24 z-10 flex flex-col gap-1.5">
       <span className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-white/60">
         Teams
       </span>
@@ -29,10 +30,10 @@ export function TeamRoster({
             type="button"
             onClick={() => onSelect(team._id)}
             className={cn(
-              "flex items-center gap-2 rounded-md border bg-black/70 px-2.5 py-1.5 text-left shadow-lg backdrop-blur transition-colors",
+              "glass-chip flex items-center gap-2 px-2.5 py-1.5 text-left transition-colors",
               selected
-                ? "border-white/80 bg-black/85"
-                : "border-white/15 hover:border-white/40",
+                ? "!border-white/80"
+                : "hover:!border-white/40",
             )}
           >
             <span
@@ -53,7 +54,7 @@ export function TeamRoster({
       })}
       {selectedId && (
         <span
-          className="mt-0.5 rounded-sm border border-accent/60 bg-black/80 px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-accent"
+          className="glass-chip mt-0.5 !border-accent/60 px-2 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-accent"
           style={{ animation: "pulse-dot 1.6s ease-in-out infinite" }}
         >
           Click a grid cell to assign

@@ -59,7 +59,7 @@ export function ReasoningPanel({ caseId }: { caseId: Id<"cases"> }) {
             { transform: `translateY(${prevTop - top}px)` },
             { transform: "translateY(0)" },
           ],
-          { duration: 600, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+          { duration: 320, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
         );
       }
 
@@ -70,7 +70,7 @@ export function ReasoningPanel({ caseId }: { caseId: Id<"cases"> }) {
             { backgroundColor: "rgba(245, 158, 11, 0.22)" },
             { backgroundColor: "rgba(245, 158, 11, 0)" },
           ],
-          { duration: 1200, easing: "ease-out" },
+          { duration: 700, easing: "ease-out" },
         );
       }
       prevUpdated.current.set(h.profile, h.updatedAt);
@@ -82,7 +82,7 @@ export function ReasoningPanel({ caseId }: { caseId: Id<"cases"> }) {
 
   return (
     <div className="space-y-2.5 p-4">
-      <div className="scanline -mx-4 -mt-4 flex items-baseline justify-between border-b bg-background/60 px-4 pb-2 pt-3">
+      <div className="scanline -mx-4 -mt-4 flex items-baseline justify-between border-b border-white/10 bg-white/[0.03] px-4 pb-2 pt-3">
         <h2 className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
           Hypotheses
         </h2>
@@ -105,8 +105,8 @@ export function ReasoningPanel({ caseId }: { caseId: Id<"cases"> }) {
               rowRefs.current.set(h.profile, el);
             }}
             className={cn(
-              "rounded-md border bg-background/40 p-3",
-              leader ? "border-l-2 border-accent/80" : "border-border",
+              "rounded-lg border bg-white/[0.045] p-3",
+              leader ? "border-l-2 border-accent/80" : "border-white/10",
             )}
           >
             <div className="mb-1.5 flex items-baseline justify-between gap-2">
@@ -136,7 +136,7 @@ export function ReasoningPanel({ caseId }: { caseId: Id<"cases"> }) {
             >
               <div
                 className={cn(
-                  "h-full rounded-full transition-[width] duration-[600ms] ease-out",
+                  "h-full rounded-full transition-[width] duration-300 ease-out",
                   leader ? "bg-accent" : "bg-primary/60",
                 )}
                 style={{ width: `${Math.round(h.weight * 100)}%` }}

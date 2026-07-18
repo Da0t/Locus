@@ -123,7 +123,11 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
           [bounds.swLng, bounds.swLat],
           [bounds.neLng, bounds.neLat],
         ],
-        fitBoundsOptions: { padding: 40 },
+        // Chrome floats OVER the map now: keep the case area clear of the
+        // glass header (top) and the right-hand panel stack.
+        fitBoundsOptions: {
+          padding: { top: 100, bottom: 48, left: 56, right: 428 },
+        },
       }}
       mapStyle="mapbox://styles/mapbox/dark-v11"
       cursor={selectedTeam ? "crosshair" : "grab"}

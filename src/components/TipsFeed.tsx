@@ -15,7 +15,7 @@ export function TipsFeed({ caseId }: { caseId: Id<"cases"> }) {
   const byId = new Map(tips.map((t) => [t._id, t]));
 
   return (
-    <div className="space-y-2 border-t p-4">
+    <div className="space-y-2 border-t border-white/10 p-4">
       <div className="flex items-baseline justify-between">
         <h2 className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
           Intel feed
@@ -39,7 +39,7 @@ export function TipsFeed({ caseId }: { caseId: Id<"cases"> }) {
             opacity: 0.35 + 0.65 * clamp(tip.weight, 0, 1),
             animation: "toast-in 300ms ease-out",
           }}
-          className="rounded-md border border-border bg-background/40 p-2.5"
+          className="rounded-lg border border-white/10 bg-white/[0.045] p-2.5"
         >
           <div className="mb-1 flex items-center justify-between gap-2">
             <span className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-accent">
@@ -68,7 +68,7 @@ export function TipsFeed({ caseId }: { caseId: Id<"cases"> }) {
             </span>
             <div className="h-1 flex-1 overflow-hidden rounded bg-muted">
               <div
-                className="h-full rounded bg-accent transition-[width] duration-500"
+                className="h-full rounded bg-accent transition-[width] duration-300"
                 style={{ width: `${Math.round(tip.credibility * 100)}%` }}
               />
             </div>

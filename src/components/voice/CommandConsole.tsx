@@ -227,10 +227,10 @@ export function CommandConsole({ caseId }: { caseId: Id<"cases"> }) {
             <div
               key={c._id}
               className={cn(
-                "rounded-md border px-2 py-1.5",
+                "rounded-lg border px-2 py-1.5",
                 isError
-                  ? "border-red-500/40 bg-red-500/5"
-                  : "border-border bg-card",
+                  ? "border-red-500/40 bg-red-500/10"
+                  : "border-white/10 bg-white/[0.05]",
               )}
             >
               <div className="flex items-center gap-2">
@@ -272,7 +272,7 @@ export function CommandConsole({ caseId }: { caseId: Id<"cases"> }) {
           ref={inputRef}
           autoFocus
           className={cn(
-            "peer h-10 pr-16 focus-visible:ring-2 focus-visible:ring-accent/70",
+            "peer h-10 bg-white/[0.06] pr-16 focus-visible:ring-2 focus-visible:ring-accent/70",
             stage && "h-12 text-base",
           )}
           placeholder="Speak or type a command…"
