@@ -21,6 +21,7 @@ import type * as planner from "../planner.js";
 import type * as profiles from "../profiles.js";
 import type * as scenario from "../scenario.js";
 import type * as sim from "../sim.js";
+import type * as simWalker from "../simWalker.js";
 import type * as teams from "../teams.js";
 import type * as tips from "../tips.js";
 
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   profiles: typeof profiles;
   scenario: typeof scenario;
   sim: typeof sim;
+  simWalker: typeof simWalker;
   teams: typeof teams;
   tips: typeof tips;
 }>;
