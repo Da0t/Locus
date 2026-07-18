@@ -244,6 +244,12 @@ export const insertTipFromIntent = internalMutation({
       caseId: args.caseId,
       tipId,
     });
+    // W1: console tips must embed + corroborate too — this mirror path
+    // bypasses tips.addTip, where the other embedTip schedule lives.
+    await ctx.scheduler.runAfter(0, internal.corroborate.embedTip, {
+      tipId,
+      caseId: args.caseId,
+    });
     return tipId;
   },
 });

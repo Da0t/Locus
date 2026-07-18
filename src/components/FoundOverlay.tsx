@@ -9,6 +9,10 @@ import { simTime } from "../lib/format";
 
 export function FoundOverlay({ activeCase }: { activeCase: Doc<"cases"> }) {
   const sim = useQuery(api.sim.state, { caseId: activeCase._id });
+  // activeCase can be App's stale cached doc (found-state workaround), which
+  // predates the debrief write — read the live doc for late fields.
+  const liveCase = useQuery(api.cases.get, { caseId: activeCase._id });
+  const debrief = liveCase?.debrief ?? activeCase.debrief;
   if (activeCase.status !== "found" || !sim) return null;
 
   const bounds = {

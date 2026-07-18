@@ -80,6 +80,15 @@ export const seedCase = mutation({
   },
 });
 
+// Live case doc by id — the found-state workaround caches a stale doc in
+// App.tsx, so late-arriving fields (debrief) must be read through this.
+export const get = query({
+  args: { caseId: v.id("cases") },
+  handler: async (ctx, { caseId }) => {
+    return await ctx.db.get(caseId);
+  },
+});
+
 // The active case, or null before seeding. Every client starts here.
 export const active = query({
   args: {},
