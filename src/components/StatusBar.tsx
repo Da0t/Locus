@@ -4,6 +4,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
+import { PresenceBar } from "./PresenceBar";
 
 function Stat({ label, value, className }: { label: string; value: string; className?: string }) {
   return (
@@ -34,6 +35,7 @@ export function StatusBar({
 
   return (
     <div className="flex items-center gap-6">
+      <PresenceBar caseId={caseId} />
       <Stat
         label="Missing"
         value={`T+${hours}h${mins.toString().padStart(2, "0")}m`}
