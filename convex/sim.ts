@@ -297,6 +297,7 @@ export const tick = internalMutation({
     if (found) {
       await ctx.db.patch(s._id, { foundAtTick: tick, running: false });
       await ctx.db.patch(caseId, { status: "found" });
+      await ctx.scheduler.runAfter(0, internal.debrief.generate, { caseId });
     } else {
       // Task 4: planner. Assigns idle teams to the highest-priority
       // unsearched, unclaimed cells using this tick's freshly written

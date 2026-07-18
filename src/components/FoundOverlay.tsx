@@ -57,6 +57,28 @@ export function FoundOverlay({ activeCase }: { activeCase: Doc<"cases"> }) {
             {predictionLine}
           </p>
         )}
+        {/* W5: after-action debrief — written by internal.debrief.generate
+            shortly after the found moment. Shimmer until it lands. */}
+        <div className="mx-auto mt-6 max-w-2xl px-6 text-left">
+          {activeCase.debrief ? (
+            <div className="whitespace-pre-line font-mono text-xs leading-relaxed text-white/80 md:text-sm">
+              {activeCase.debrief.split("\n").map((line, i) => {
+                const m = line.match(/^([A-Z][A-Z ]+):\s*(.*)$/);
+                return m ? (
+                  <p key={i}>
+                    <span className="text-amber-400">{m[1]}:</span> {m[2]}
+                  </p>
+                ) : (
+                  <p key={i}>{line}</p>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="animate-pulse text-center font-mono text-xs uppercase tracking-[0.25em] text-white/50">
+              generating after-action debrief…
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
