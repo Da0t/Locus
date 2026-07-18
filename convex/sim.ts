@@ -182,6 +182,10 @@ async function moveAndSearchTeams(
         claimedBy: undefined,
       });
       newlySearched.push(searchedGrid);
+    } else if (grid.claimedBy !== undefined) {
+      // Already searched (e.g. claimed after another team searched it): the
+      // team still needs to release its claim when it goes idle below.
+      await ctx.db.patch(grid._id, { claimedBy: undefined });
     }
     await ctx.db.patch(team._id, { status: "idle", assignedGridId: undefined });
   }
@@ -200,7 +204,15 @@ export const tick = internalMutation({
 
     // ---- Real tick body ----
     const caseDoc = await ctx.db.get(caseId);
-    if (!caseDoc || caseDoc.status !== "active") return; // not active: stop, no reschedule
+    if (!caseDoc || caseDoc.status !== "active") {
+      // Case doc missing entirely: nothing to resume, leave state untouched.
+      // Case doc present but externally suspended/found: unwedge the running
+      // flag so a later setRunning(true)/resume isn't a no-op.
+      if (caseDoc && s.running) {
+        await ctx.db.patch(s._id, { running: false });
+      }
+      return; // not active: stop, no reschedule
+    }
 
     const bounds: Bounds = {
       swLat: caseDoc.boundsSwLat,
@@ -268,12 +280,11 @@ export const tick = internalMutation({
       teams,
       grids,
     );
-    // Task 4: planner. Assigns idle teams to the highest-priority
-    // unsearched, unclaimed cells using this tick's freshly written heatmap.
-    await assignTeams(ctx, caseId, heatmap);
     // Task 5: found check. If any cell newly searched this tick is the
     // hidden true location, stop the world: freeze simState and mark the
-    // case found. Coordinates never leave this computation.
+    // case found. Coordinates never leave this computation. Runs before the
+    // planner so a found tick never re-dispatches the finding team with a
+    // fresh claim before the world stops.
     const trueCell = latLngToCell(
       bounds,
       caseDoc.gridSize,
@@ -286,6 +297,11 @@ export const tick = internalMutation({
     if (found) {
       await ctx.db.patch(s._id, { foundAtTick: tick, running: false });
       await ctx.db.patch(caseId, { status: "found" });
+    } else {
+      // Task 4: planner. Assigns idle teams to the highest-priority
+      // unsearched, unclaimed cells using this tick's freshly written
+      // heatmap. Skipped on the found tick above.
+      await assignTeams(ctx, caseId, heatmap);
     }
     // --------------------------------------------------------------------
 
