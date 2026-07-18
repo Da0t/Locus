@@ -11,6 +11,7 @@ import type { Doc } from "./_generated/dataModel";
 import { PROFILES, SIM, type Profile } from "./profiles";
 import { mulberry32, runWalks } from "./simWalker";
 import { bearingDeg, cellCenter, distanceKm, movePoint, type Bounds } from "./lib/geo";
+import { assignTeams } from "./planner";
 
 // Team ground speed. Not part of SIM (profiles.ts) — teams are simulated
 // units, not lost-person hypotheses.
@@ -257,7 +258,9 @@ export const tick = internalMutation({
       teams,
       grids,
     );
-    // Task 4: planner
+    // Task 4: planner. Assigns idle teams to the highest-priority
+    // unsearched, unclaimed cells using this tick's freshly written heatmap.
+    await assignTeams(ctx, caseId, heatmap);
     // Task 5: found check — will consume newlySearchedGrids (each row's
     // x/y cell may contain the hidden true location). Not implemented yet,
     // so just mark the binding intentionally unused for now.
