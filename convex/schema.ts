@@ -44,6 +44,7 @@ export default defineSchema({
       v.literal("suspended"),
     ),
     photoStorageId: v.optional(v.id("_storage")),
+    debrief: v.optional(v.string()), // Round-2: after-action report (W5)
   }),
 
   // One row per Koester profile hypothesis. Weights sum to ~1.
@@ -81,7 +82,16 @@ export default defineSchema({
     source: v.string(), // "radio" | "voice" | "scripted" | "911"
     credibility: v.number(), // 0..1, scored by Person C's judge (stub: 0.5)
     weight: v.number(), // aged toward 0 by Person A's tick
-  }).index("by_case", ["caseId"]),
+    // Round-2: gateway embedding for corroboration matching (W1).
+    embedding: v.optional(v.array(v.float64())),
+    corroborates: v.optional(v.id("tips")), // most-similar prior tip, if close
+  })
+    .index("by_case", ["caseId"])
+    .vectorIndex("by_embedding", {
+      vectorField: "embedding",
+      dimensions: 1536, // text-embedding-3-small
+      filterFields: ["caseId"],
+    }),
 
   // Search/claim state per cell. Probabilities live in simState.heatmap.
   grids: defineTable({
