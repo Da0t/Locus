@@ -143,10 +143,8 @@ export const tick = internalMutation({
       const newWeight = 0.5 ** (minutesSinceObserved / SIM.TIP_HALF_LIFE_SIM_MIN);
       if (Math.abs(newWeight - tipDoc.weight) > 0.05) {
         await ctx.db.patch(tipDoc._id, { weight: newWeight });
-        agedTips.push({ ...tipDoc, weight: newWeight });
-      } else {
-        agedTips.push(tipDoc);
       }
+      agedTips.push({ ...tipDoc, weight: newWeight });
     }
 
     const radiusKm = computeRadiusKm(hypotheses, simClockMin);
