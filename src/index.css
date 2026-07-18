@@ -98,6 +98,22 @@
   background: transparent;
 }
 
+/* Mapbox popups, restyled for the ops room. */
+.mapboxgl-popup-content {
+  background: hsl(217 26% 7% / 0.96);
+  color: hsl(40 18% 90%);
+  border: 1px solid hsl(217 16% 22%);
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.5);
+}
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+  border-top-color: hsl(217 16% 22%);
+}
+.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
+  border-bottom-color: hsl(217 16% 22%);
+}
+
 /* Last-known-point pulse rings. */
 @keyframes lkp-ring {
   0% {
