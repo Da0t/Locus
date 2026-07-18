@@ -6,9 +6,15 @@
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import type { MutationCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { PROFILES, SIM, type Profile } from "./profiles";
 import { mulberry32, runWalks } from "./simWalker";
+import { bearingDeg, cellCenter, distanceKm, movePoint, type Bounds } from "./lib/geo";
+
+// Team ground speed. Not part of SIM (profiles.ts) — teams are simulated
+// units, not lost-person hypotheses.
+const TEAM_SPEED_KM_H = 3;
 
 export const state = query({
   args: { caseId: v.id("cases") },
@@ -105,6 +111,81 @@ function normalizeToMax(heatmap: number[][]): number[][] {
   return heatmap.map((row) => row.map((cell) => cell / max));
 }
 
+/**
+ * Drive enroute teams toward their assigned cell and complete searches.
+ * Statelessly infers "2 consecutive ticks in the cell" from status alone —
+ * a team lands on its cell center and flips to "searching" on the arrival
+ * tick, then this function completes the search on the very next tick it
+ * still sees that team as "searching". Idle teams are left untouched (no
+ * patch). Returns the grid docs newly marked searched THIS tick, which
+ * Task 5's found check consumes.
+ */
+async function moveAndSearchTeams(
+  ctx: MutationCtx,
+  tick: number,
+  minutesPerTick: number,
+  caseDoc: Doc<"cases">,
+  teams: Doc<"teams">[],
+  grids: Doc<"grids">[],
+): Promise<Doc<"grids">[]> {
+  const bounds: Bounds = {
+    swLat: caseDoc.boundsSwLat,
+    swLng: caseDoc.boundsSwLng,
+    neLat: caseDoc.boundsNeLat,
+    neLng: caseDoc.boundsNeLng,
+  };
+  const stepKm = (TEAM_SPEED_KM_H * minutesPerTick) / 60;
+  const newlySearched: Doc<"grids">[] = [];
+
+  for (const team of teams) {
+    if (team.status === "idle") continue;
+
+    const grid = team.assignedGridId
+      ? grids.find((g) => g._id === team.assignedGridId)
+      : undefined;
+
+    if (!grid) {
+      // Defensive: enroute/searching with no assignment, or an assignment
+      // that isn't in the loaded grids. Reset to idle.
+      await ctx.db.patch(team._id, { status: "idle", assignedGridId: undefined });
+      continue;
+    }
+
+    if (team.status === "enroute") {
+      const target = cellCenter(bounds, caseDoc.gridSize, { x: grid.x, y: grid.y });
+      const remainingKm = distanceKm(team.lat, team.lng, target.lat, target.lng);
+      if (remainingKm < 0.1 || stepKm >= remainingKm) {
+        // Arrival tick: snap exactly to the cell center.
+        await ctx.db.patch(team._id, {
+          lat: target.lat,
+          lng: target.lng,
+          status: "searching",
+        });
+      } else {
+        const bearing = bearingDeg(team.lat, team.lng, target.lat, target.lng);
+        const moved = movePoint(team.lat, team.lng, stepKm, bearing);
+        await ctx.db.patch(team._id, { lat: moved.lat, lng: moved.lng });
+      }
+      continue;
+    }
+
+    // team.status === "searching": arrived on an earlier tick, so this is
+    // the 2nd consecutive tick in the cell -> the search is complete.
+    if (!grid.searched) {
+      const searchedGrid = { ...grid, searched: true, searchedAtTick: tick, claimedBy: undefined };
+      await ctx.db.patch(grid._id, {
+        searched: true,
+        searchedAtTick: tick,
+        claimedBy: undefined,
+      });
+      newlySearched.push(searchedGrid);
+    }
+    await ctx.db.patch(team._id, { status: "idle", assignedGridId: undefined });
+  }
+
+  return newlySearched;
+}
+
 export const tick = internalMutation({
   args: { caseId: v.id("cases") },
   handler: async (ctx, { caseId }) => {
@@ -128,6 +209,10 @@ export const tick = internalMutation({
       .collect();
     const grids = await ctx.db
       .query("grids")
+      .withIndex("by_case", (q) => q.eq("caseId", caseId))
+      .collect();
+    const teams = await ctx.db
+      .query("teams")
       .withIndex("by_case", (q) => q.eq("caseId", caseId))
       .collect();
 
@@ -161,9 +246,22 @@ export const tick = internalMutation({
 
     await ctx.db.patch(s._id, { tick, simClockMin, radiusKm, heatmap });
 
-    // Task 3: team movement & search
+    // Task 3: team movement & search. Drives enroute teams toward their
+    // assigned cells and completes searches; returns the grid docs newly
+    // marked searched this tick.
+    const newlySearchedGrids = await moveAndSearchTeams(
+      ctx,
+      tick,
+      s.minutesPerTick,
+      caseDoc,
+      teams,
+      grids,
+    );
     // Task 4: planner
-    // Task 5: found check
+    // Task 5: found check — will consume newlySearchedGrids (each row's
+    // x/y cell may contain the hidden true location). Not implemented yet,
+    // so just mark the binding intentionally unused for now.
+    void newlySearchedGrids;
     // --------------------------------------------------------------------
 
     await ctx.scheduler.runAfter(SIM.TICK_MS, internal.sim.tick, { caseId });
