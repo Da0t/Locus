@@ -1,10 +1,11 @@
-# LOCUS — Stage run-of-show (90 seconds)
+# LOCUS — Stage run-of-show (60 seconds)
 
-**Measured, not guessed.** Every timing below comes from a full dress
-rehearsal on production (2026-07-18, cloud Convex + Vercel): voice line at
-+15s, second line at +25s, drip at +30s, **found fired at +67s**. Two
-earlier hands-off runs found at 44–46s; the early voice tip is what buys
-the window. Follow the sequence in order — it is load-bearing.
+**Measured, not guessed.** Timings from two dress rehearsals on production
+(2026-07-18, cloud Convex + Vercel, six teams): voice at +8s, second line
++14s, drip +16s, **found at +56s and +60s** — the found tick was identical
+(36) in both runs; the arc is near-deterministic. Follow the sequence in
+order — it is load-bearing: the early voice tip is what keeps the blind
+convergence from ending the show early.
 
 Demo from **https://locus-iota-orcin.vercel.app** in Chrome, one window,
 projector-mirrored.
@@ -34,82 +35,69 @@ npx convex run photos:attachLatest    # Maya's portrait -> header, survives rese
 
 ## The sequence (driver actions in bold, all times from clicking RUN)
 
-### T0 — "This is Maya Chen."
+### T0 — "This is Maya Chen." **Click RUN.**
 
 > "Maya Chen. Day hiker, missing on Mount Tam since 9:41 this morning.
-> Every SAR team in the country plans this search by hand, on a map that
-> freezes the moment it's drawn."
+> Every search plan today is drawn by hand — and frozen the moment it's
+> drawn. Locus never freezes."
 
-**Click RUN.** Hands off.
+The heatmap blooms along the trails, the ring grows, **six teams** deploy
+on their own. One breath — let the room see it move.
 
-### T0–15s — it moves on its own
-
-The heatmap blooms along the trails, the radius ring grows, three teams
-deploy without anyone touching anything.
-
-> "Locus never freezes. LLM agents reason about who Maya is — the
-> probability model is grounded in Koester's lost-person research, fifty
-> thousand real cases — and the simulation re-plans the search every two
-> seconds, on its own."
-
-### +15s — speak to it (voice line 1)
+### +8s — speak to it (voice line 1)
 
 **Press /** (focus insurance), then say into Voice Cursor:
 
 > **"Add a sighting near the north creek about an hour ago."**
 
-Watch with the audience: add-tip chip lands, the judge scores it, the
-hiker hypothesis pulls ahead with fresh reasoning, the heatmap drags
-north. Narrate exactly that, one sentence.
+Add-tip chip lands, the judge scores it, Hiker pulls ahead with fresh
+reasoning, the heatmap drags north. One narrated sentence:
 
-### +25s — voice line 2
+> "LLM agents re-weigh who Maya is on every piece of intel — grounded in
+> Koester's fifty thousand real lost-person cases."
+
+### +14s — voice line 2
 
 > **"Which sector is most under-searched?"**
 
 The answer prints AND speaks aloud (read-back). Rehearsal answer: *"the
-hot cell 0.1 km from North Creek."* Let the room hear it — say nothing
-over it.
+hot cell 0.1 km from North Creek."* Say nothing over it.
 
-### +30s — the intel starts flowing
+### +16s — the intel starts flowing
 
 **Click "Start scripted tips."** Hands off for good.
 
-> "Now the tips start coming in the way they really do — witnesses, 911
-> calls, radio traffic. Watch the credibility meters: the reasoning judge
-> scores every report."
+> "Now the tips flow the way they really do — witnesses, 911, radio.
+> The judge scores every report's credibility."
 
-At ~+51s the **red herring** lands: a gas-station clerk 3 km downhill.
-Point at it — rehearsal score **0.10 credibility**:
+At ~+29s the **red herring** lands: a gas-station clerk 3 km downhill.
+Point at it — rehearsal score **0.10**:
 
-> "That one's physically impossible — she can't be 3 kilometers downhill.
-> The judge scores it a 0.1 and the search doesn't chase it. No team
-> wasted."
+> "Physically impossible — 3 kilometers downhill. Scored 0.1, ignored.
+> No team wasted."
 
-### ~+60–75s — found
+### ~+50–60s — found
 
 The heatmap tightens creek-side, off-trail, west of the ford; a team
-reaches the cell; **SUBJECT LOCATED** fires with the sim clock, grid, and
-prediction rank — then the after-action debrief writes itself under it
-(~5s later, names the decisive tip).
+reaches the cell; **SUBJECT LOCATED** fires — sim clock, grid, prediction
+rank — and the after-action debrief writes itself beneath it.
 
 > "And there she is — off-trail by the creek, exactly where the intel
 > pinned her. The debrief just wrote itself."
 
-**Insurance:** if found hasn't fired by **+75s**, click **Charlie's chip**,
-then click the hottest cell. That's not a cheat — say: *"and the
-coordinator can task a team straight onto the peak"* — claim, two ticks,
-found by ~+85s.
+**Insurance:** if found hasn't fired by **+60s**, click **Charlie's chip**,
+then the hottest cell — *"and the coordinator can task a team straight
+onto the peak"* — claim, two ticks, found by ~+68s.
 
-### +75–90s — the kicker
+### Found +8s — the kicker (say it over the debrief)
 
 > "We voice-coded a voice-commanded product — I've used Voice Cursor
-> daily for a year. **Convex** runs this entire live world: the
-> self-scheduling simulation, the agent threads, every screen in sync.
-> Every reasoning call rides one gateway client, Respan-shaped — it's a
-> single env var to route through their platform. Locus: the search plan
-> that never freezes."
+> daily for a year. **Convex** runs this whole live world; every
+> reasoning call rides one gateway client, Respan-shaped, one env var to
+> route through their platform. Locus: the search plan that never
+> freezes."
 
-Stop at 90.
+Done ~70 seconds.
 
 ---
 

@@ -209,13 +209,17 @@ export const seedDemo = mutation({
       hiddenTrueLat: HIDDEN_TRUE.lat,
       hiddenTrueLng: HIDDEN_TRUE.lng,
       teams: [
-        // Alpha staged at the Panoramic pullout SOUTH of the LKP (not on it):
-        // stage pacing — teams starting on top of the hot trail cells can
-        // reach the truth cell before the tip arc even lands (measured 35s
-        // hands-off found on 2026-07-18, vs the 60-100s stage window).
-        { name: "Team Alpha", lat: 37.8985, lng: -122.6035 },
-        { name: "Team Bravo", lat: 37.9, lng: -122.62 },
-        { name: "Team Charlie", lat: 37.912, lng: -122.585 },
+        // Six teams ringing the box (palette has exactly 6 team colors).
+        // None staged ON the hot trail cells: teams starting there reach the
+        // truth cell before the tip arc lands (measured 35s blind found).
+        // The nearest three drive the found timing; the far three make the
+        // map read like a real multi-team operation.
+        { name: "Team Alpha", lat: 37.8985, lng: -122.6035 }, // S pullout
+        { name: "Team Bravo", lat: 37.9, lng: -122.62 }, // SW
+        { name: "Team Charlie", lat: 37.912, lng: -122.585 }, // E ridge
+        { name: "Team Delta", lat: 37.932, lng: -122.635 }, // far NW
+        { name: "Team Echo", lat: 37.893, lng: -122.59 }, // SE road
+        { name: "Team Foxtrot", lat: 37.895, lng: -122.635 }, // SW coast
       ],
       // --- PACING KNOBS (Person D tunes) ---
       // minutesPerTick scales how much sim-time each ~1.5s fast-clock tick
@@ -226,7 +230,7 @@ export const seedDemo = mutation({
       // TUNE at integration (Task 5): with Person A's real engine, target
       // hands-off Run->found at 75-100s. Too early -> lower toward 3; too late
       // -> raise toward 6. Retime after every engine change.
-      minutesPerTick: 2, // 4 -> 35s found, 3 -> 46s; 2 targets the 60-90s stage window (cloud ~1.6s/tick)
+      minutesPerTick: 3, // 60-SECOND SHOW: 6 teams + compressed drip target found ~+40-50s from RUN
       initialSimMin: 180, // already missing 3 hours at case open
     });
     return caseId as import("./_generated/dataModel").Id<"cases">;
@@ -258,7 +262,7 @@ type ScriptedTip = {
 // authored tip lands ~60s in, before the 75-100s found window.
 export const TIP_SCRIPT: ScriptedTip[] = [
   {
-    afterSec: 4,
+    afterSec: 3,
     text: "Trail runner thinks she passed a woman in a red jacket heading uphill on Matt Davis, maybe 90 minutes ago. Wasn't sure.",
     lat: 37.9155,
     lng: -122.6095, // ~330m SW of truth, on the trail
@@ -266,7 +270,7 @@ export const TIP_SCRIPT: ScriptedTip[] = [
     source: "scripted",
   },
   {
-    afterSec: 9,
+    afterSec: 5,
     text: "Dog-walker reports a hiker resting near the fire-road junction about an hour ago; didn't look distressed.",
     lat: 37.92,
     lng: -122.6072, // ~200m N of truth, at the junction
@@ -274,7 +278,7 @@ export const TIP_SCRIPT: ScriptedTip[] = [
     source: "scripted",
   },
   {
-    afterSec: 8,
+    afterSec: 5,
     // RED HERRING, deliberately EARLY (cumulative ~21s) so the judge's
     // discount is visible on stage BEFORE the found moment (~45-60s) —
     // measured runs finish before a late herring would land. Implausible on
@@ -286,7 +290,7 @@ export const TIP_SCRIPT: ScriptedTip[] = [
     source: "scripted",
   },
   {
-    afterSec: 10,
+    afterSec: 5,
     text: "911 caller heard someone calling for help down by the creek crossing roughly 40 minutes ago.",
     lat: 37.9178,
     lng: -122.6103, // ~120m SE of truth, at the creek ford
@@ -294,7 +298,7 @@ export const TIP_SCRIPT: ScriptedTip[] = [
     source: "scripted",
   },
   {
-    afterSec: 10,
+    afterSec: 5,
     text: "Two backpackers saw a woman matching Maya sitting off-trail near the creek below the junction, favoring one ankle, about 25 minutes ago.",
     lat: 37.917,
     lng: -122.6092, // ~230m SE of truth — the credible one, hiker pulls ahead
@@ -302,7 +306,7 @@ export const TIP_SCRIPT: ScriptedTip[] = [
     source: "scripted",
   },
   {
-    afterSec: 10,
+    afterSec: 5,
     text: "Team Alpha radios a fresh boot print and a dropped water bottle just west of the creek crossing, minutes old.",
     lat: 37.9192,
     lng: -122.6098, // ~150m NE of truth — final tight corroboration
