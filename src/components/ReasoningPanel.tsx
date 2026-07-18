@@ -1,7 +1,7 @@
 // OWNER: Person B (map & UI). Renders Person C's hypothesis reasoning.
 // Rows re-sort by weight with a 600ms FLIP animation; a row flashes when
 // its updatedAt changes — that flash is "the LLM just reasoned" on stage.
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -21,6 +21,26 @@ export function ReasoningPanel({ caseId }: { caseId: Id<"cases"> }) {
   const prevUpdated = useRef(new Map<string, number>());
 
   const sorted = [...(hypotheses ?? [])].sort((a, b) => b.weight - a.weight);
+
+  // "reasoned 12s ago" — wall clock is display bookkeeping only (CONTRACTS
+  // §Sim clock). 1s ticker keeps the label honest between re-weighs.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const lastReasonedAt =
+    sorted.length > 0 ? Math.max(...sorted.map((h) => h.updatedAt)) : null;
+  const agoSec =
+    lastReasonedAt === null
+      ? null
+      : Math.max(0, Math.floor((now - lastReasonedAt) / 1000));
+  const agoLabel =
+    agoSec === null
+      ? null
+      : agoSec < 60
+        ? `${agoSec}s`
+        : `${Math.floor(agoSec / 60)}m`;
 
   // FLIP: compare each row's screen position to last render; animate the
   // delta. Also flash rows whose updatedAt advanced.
@@ -62,11 +82,11 @@ export function ReasoningPanel({ caseId }: { caseId: Id<"cases"> }) {
 
   return (
     <div className="space-y-2.5 p-4">
-      <div className="flex items-baseline justify-between">
+      <div className="scanline -mx-4 -mt-4 flex items-baseline justify-between border-b bg-background/60 px-4 pb-2 pt-3">
         <h2 className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
           Hypotheses
         </h2>
-        <span className="text-[9px] uppercase tracking-[0.14em] text-muted-foreground/70">
+        <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground/60">
           LLM · re-weighs on intel
         </span>
       </div>
@@ -100,28 +120,41 @@ export function ReasoningPanel({ caseId }: { caseId: Id<"cases"> }) {
               </span>
               <span
                 className={cn(
-                  "font-mono text-base font-bold tabular-nums leading-none",
+                  "font-mono text-xl font-black leading-none",
                   leader ? "text-accent" : "text-muted-foreground",
                 )}
               >
-                {(h.weight * 100).toFixed(0)}%
+                {(h.weight * 100).toFixed(0)}
+                <span className="text-[10px] font-bold opacity-60">%</span>
               </span>
             </div>
-            <div className="mb-2 h-1.5 overflow-hidden rounded bg-muted">
+            <div
+              className={cn(
+                "mb-2 h-1 overflow-hidden rounded-full bg-muted",
+                leader && "pulse-glow",
+              )}
+            >
               <div
                 className={cn(
-                  "h-full rounded transition-[width] duration-[600ms] ease-out",
+                  "h-full rounded-full transition-[width] duration-[600ms] ease-out",
                   leader ? "bg-accent" : "bg-primary/60",
                 )}
                 style={{ width: `${Math.round(h.weight * 100)}%` }}
               />
             </div>
-            <p className="text-[11px] leading-relaxed text-muted-foreground">
+            <p className="text-[11px] leading-relaxed text-muted-foreground/70">
               {h.reasoning}
             </p>
           </div>
         );
       })}
+      {agoLabel !== null && (
+        <div className="flex justify-end">
+          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground/50">
+            reasoned {agoLabel} ago
+          </span>
+        </div>
+      )}
     </div>
   );
 }
