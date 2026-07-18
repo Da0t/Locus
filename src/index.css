@@ -38,7 +38,7 @@
   }
 
   .dark {
-    --background: 216 30% 4%;
+    --background: 218 28% 3%;
     --foreground: 40 18% 90%;
 
     --card: 217 26% 6%;
@@ -62,8 +62,10 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 217 16% 14%;
-    --input: 217 16% 16%;
+    /* Thin hairlines: white at 10–15% alpha, not opaque gray — they read
+       the same over the background, cards, and the vignette. */
+    --border: 0 0% 100% / 0.12;
+    --input: 0 0% 100% / 0.15;
     --ring: 0 78% 52%;
   }
 }
@@ -74,10 +76,21 @@
   }
   html {
     /* Never a white flash: dark from the very first paint. */
-    background-color: hsl(216 30% 4%);
+    background-color: hsl(218 28% 3%);
   }
   body {
     @apply bg-background text-foreground antialiased;
+    /* Ops-room numerals: every digit the same width, everywhere. */
+    font-variant-numeric: tabular-nums;
+  }
+  .dark body {
+    /* Near-black with a faint red-tinted vignette at the edges. */
+    background-image: radial-gradient(
+      130% 100% at 50% 40%,
+      transparent 55%,
+      hsl(0 65% 9% / 0.45) 100%
+    );
+    background-attachment: fixed;
   }
 }
 
@@ -166,4 +179,51 @@
     transform: none;
     opacity: 1;
   }
+}
+
+/* Soft breathing glow — reserve for live/lead/alert elements only. */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 4px 0 hsl(var(--accent) / 0.35),
+      0 0 12px 2px hsl(var(--accent) / 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 2px 0 hsl(var(--accent) / 0.15),
+      0 0 6px 1px hsl(var(--accent) / 0.04);
+  }
+}
+.pulse-glow {
+  animation: pulse-glow 2.6s ease-in-out infinite;
+}
+
+/* Scanline sweep for the sidebar header. Deliberately faint: if you can
+   spot it from 3m away, lower the alpha. */
+@keyframes scanline {
+  from {
+    transform: translateY(-110%);
+  }
+  to {
+    transform: translateY(240%);
+  }
+}
+.scanline {
+  position: relative;
+  overflow: hidden;
+}
+.scanline::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0 0 auto;
+  height: 45%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    hsl(0 0% 100% / 0.05),
+    transparent
+  );
+  animation: scanline 7s linear infinite;
 }
