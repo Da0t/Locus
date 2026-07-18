@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import MapGL, {
   Layer,
   Source,
-  type MapLayerMouseEvent,
+  type MapMouseEvent,
   type MapRef,
 } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -105,7 +105,7 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
 
   // The claim interaction: armed team + grid cell click → claimGrid.
   // A lost race throws — that message IS the contention demo; show it big.
-  const onMapClick = (e: MapLayerMouseEvent) => {
+  const onMapClick = (e: MapMouseEvent) => {
     if (!selectedTeam || activeCase.status === "found") return;
     const cell = latLngToCell(bounds, gridSize, e.lngLat.lat, e.lngLat.lng);
     claimGrid({ teamId: selectedTeam, x: cell.x, y: cell.y })
