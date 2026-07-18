@@ -1,7 +1,9 @@
 // OWNER: Person B (map & UI). Layout shell — keep the <CommandConsole />
 // slot (Person D owns that component's internals).
+import { useRef } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
+import type { Doc } from "../convex/_generated/dataModel";
 import { MapView } from "./components/MapView";
 import { ReasoningPanel } from "./components/ReasoningPanel";
 import { TipsFeed } from "./components/TipsFeed";
@@ -25,9 +27,26 @@ function Wordmark() {
 }
 
 export default function App() {
-  const activeCase = useQuery(api.cases.active);
+  const liveCase = useQuery(api.cases.active);
   const seedDemo = useMutation(api.scenario.seedDemo);
   const setRunning = useMutation(api.sim.setRunning);
+
+  // cases.active filters status === "active", so the case VANISHES from
+  // that query at the found moment. Keep the last live doc and detect the
+  // find via simState.foundAtTick (A sets both in the same tick — see
+  // CONTRACTS §Found) so the found beat renders instead of "No active case".
+  const lastCaseRef = useRef<Doc<"cases"> | null>(null);
+  if (liveCase) lastCaseRef.current = liveCase;
+  const lastCase = lastCaseRef.current;
+  const sim = useQuery(
+    api.sim.state,
+    lastCase ? { caseId: lastCase._id } : "skip",
+  );
+  const activeCase: Doc<"cases"> | null | undefined =
+    liveCase ??
+    (liveCase === null && lastCase && sim?.foundAtTick !== undefined
+      ? { ...lastCase, status: "found" as const }
+      : liveCase);
 
   if (activeCase === undefined) {
     // Loading: dark splash, never a blank flash.

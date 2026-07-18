@@ -37,10 +37,11 @@ export function FoundOverlay({ activeCase }: { activeCase: Doc<"cases"> }) {
 
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-40 flex items-center"
+      className="pointer-events-none fixed inset-0 z-40 flex items-end pb-16"
       style={{ animation: "found-veil 600ms ease-out" }}
     >
-      <div className="absolute inset-0 bg-black/45" />
+      {/* Lower-third strip: flyTo centers the subject marker — keep it visible. */}
+      <div className="absolute inset-0 bg-black/35" />
       <div
         className="relative w-full border-y-2 border-accent bg-black/85 py-8 text-center backdrop-blur-sm"
         style={{ animation: "found-strip 500ms cubic-bezier(0.22, 1, 0.36, 1)" }}

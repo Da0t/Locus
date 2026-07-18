@@ -3,7 +3,8 @@
 // declarative — Convex reactivity drives the data props; no manual map
 // mutation, so per-tick updates never flicker.
 import { useEffect, useMemo, useRef, useState } from "react";
-import Map, {
+// Named MapGL so the component doesn't shadow the global Map constructor.
+import MapGL, {
   Layer,
   Source,
   type MapLayerMouseEvent,
@@ -113,7 +114,7 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
   };
 
   return (
-    <Map
+    <MapGL
       ref={mapRef}
       mapboxAccessToken={TOKEN}
       initialViewState={{
@@ -241,6 +242,6 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
       {found && (
         <FoundMarker lat={activeCase.hiddenTrueLat} lng={activeCase.hiddenTrueLng} />
       )}
-    </Map>
+    </MapGL>
   );
 }
