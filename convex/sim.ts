@@ -10,7 +10,14 @@ import type { MutationCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { PROFILES, SIM, type Profile } from "./profiles";
 import { mulberry32, runWalks } from "./simWalker";
-import { bearingDeg, cellCenter, distanceKm, movePoint, type Bounds } from "./lib/geo";
+import {
+  bearingDeg,
+  cellCenter,
+  distanceKm,
+  latLngToCell,
+  movePoint,
+  type Bounds,
+} from "./lib/geo";
 import { assignTeams } from "./planner";
 
 // Team ground speed. Not part of SIM (profiles.ts) — teams are simulated
@@ -261,10 +268,28 @@ export const tick = internalMutation({
     // Task 4: planner. Assigns idle teams to the highest-priority
     // unsearched, unclaimed cells using this tick's freshly written heatmap.
     await assignTeams(ctx, caseId, heatmap);
-    // Task 5: found check — will consume newlySearchedGrids (each row's
-    // x/y cell may contain the hidden true location). Not implemented yet,
-    // so just mark the binding intentionally unused for now.
-    void newlySearchedGrids;
+    // Task 5: found check. If any cell newly searched this tick is the
+    // hidden true location, stop the world: freeze simState and mark the
+    // case found. Coordinates never leave this computation.
+    const bounds: Bounds = {
+      swLat: caseDoc.boundsSwLat,
+      swLng: caseDoc.boundsSwLng,
+      neLat: caseDoc.boundsNeLat,
+      neLng: caseDoc.boundsNeLng,
+    };
+    const trueCell = latLngToCell(
+      bounds,
+      caseDoc.gridSize,
+      caseDoc.hiddenTrueLat,
+      caseDoc.hiddenTrueLng,
+    );
+    const found = newlySearchedGrids.some(
+      (g) => g.x === trueCell.x && g.y === trueCell.y,
+    );
+    if (found) {
+      await ctx.db.patch(s._id, { foundAtTick: tick, running: false });
+      await ctx.db.patch(caseId, { status: "found" });
+    }
     // --------------------------------------------------------------------
 
     await ctx.scheduler.runAfter(SIM.TICK_MS, internal.sim.tick, { caseId });
