@@ -11,6 +11,7 @@ import { StatusBar } from "./components/StatusBar";
 import { CommandConsole } from "./components/voice/CommandConsole";
 import { Toaster } from "./components/Toaster";
 import { FoundOverlay } from "./components/FoundOverlay";
+import { SubjectPhoto } from "./components/SubjectPhoto";
 import { Button } from "./components/ui/button";
 
 function Wordmark() {
@@ -88,6 +89,7 @@ export default function App() {
         <div className="flex min-w-0 items-center gap-5">
           <Wordmark />
           <div className="h-8 w-px shrink-0 bg-border" />
+          <SubjectPhoto caseId={activeCase._id} />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="truncate text-sm font-semibold">{activeCase.name}</span>
