@@ -1,10 +1,24 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/convex.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
+    <title>LOCUS — SAR Command</title>
+    <style>
+      /* Dark before any JS runs; next-themes takes over after hydration. */
+      html {
+        background: #070a0f;
+        color-scheme: dark;
+      }
+    </style>
+    <script>
+      // Honor a saved light preference pre-paint; default stays dark.
+      try {
+        if (localStorage.getItem("theme") === "light")
+          document.documentElement.classList.remove("dark");
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
