@@ -236,7 +236,7 @@ export function CommandConsole({ caseId }: { caseId: Id<"cases"> }) {
               <div className="flex items-center gap-2">
                 <span
                   className={cn(
-                    "shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide",
+                    "shrink-0 rounded border px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.14em]",
                     chip.className,
                   )}
                 >
@@ -267,16 +267,30 @@ export function CommandConsole({ caseId }: { caseId: Id<"cases"> }) {
       {/* Input — Voice Cursor dictates here at system level. Dictation lands
           wherever focus is, so focus is defended: autofocus on mount, "/"
           refocuses from anywhere (map clicks steal focus), refocus after send. */}
-      <div className="px-3 pb-3">
+      <div className="relative px-3 pb-3">
         <Input
           ref={inputRef}
           autoFocus
-          className={stage ? "h-11 text-base" : undefined}
-          placeholder="Speak or type a command…  ( / to focus )"
+          className={cn(
+            "peer h-10 pr-16 focus-visible:ring-2 focus-visible:ring-accent/70",
+            stage && "h-12 text-base",
+          )}
+          placeholder="Speak or type a command…"
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send(text)}
         />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute right-6 top-[calc(50%-0.375rem)] flex -translate-y-1/2 items-center gap-1.5 transition-opacity peer-focus:opacity-0 peer-[:not(:placeholder-shown)]:opacity-0"
+        >
+          <kbd className="rounded border border-border bg-secondary px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-muted-foreground shadow-[inset_0_1px_0_hsl(0_0%_100%/0.08),inset_0_-1px_0_rgb(0_0_0/0.5)]">
+            /
+          </kbd>
+          <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground/60">
+            focus
+          </span>
+        </div>
       </div>
     </div>
   );
