@@ -22,6 +22,7 @@ import { TeamMarkers } from "./map/TeamMarkers";
 import { TipMarkers } from "./map/TipMarkers";
 import { TeamRoster } from "./map/TeamRoster";
 import { FoundMarker } from "./map/FoundMarker";
+import { Legend } from "./map/Legend";
 import { errorMessage, toast } from "../lib/toast";
 
 const TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
@@ -149,7 +150,7 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
               "match",
               ["get", "kind"],
               "steep", 0.35,
-              0.25,
+              0.4,
             ],
           }}
         />
