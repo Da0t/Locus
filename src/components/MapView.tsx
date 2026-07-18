@@ -2,7 +2,7 @@
 // grid search/claim state, LKP, radius ring, tips, teams. Everything is
 // declarative — Convex reactivity drives the data props; no manual map
 // mutation, so per-tick updates never flicker.
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Map, {
   Layer,
   Source,
@@ -20,6 +20,7 @@ import { LkpMarker } from "./map/LkpMarker";
 import { TeamMarkers } from "./map/TeamMarkers";
 import { TipMarkers } from "./map/TipMarkers";
 import { TeamRoster } from "./map/TeamRoster";
+import { FoundMarker } from "./map/FoundMarker";
 import { errorMessage, toast } from "../lib/toast";
 
 const TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
@@ -77,6 +78,21 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
       ringFC(activeCase.lastKnownLat, activeCase.lastKnownLng, sim?.radiusKm ?? 0),
     [activeCase.lastKnownLat, activeCase.lastKnownLng, sim?.radiusKm],
   );
+
+  // The found moment: reactivity flips status → fly to the subject once.
+  const found = activeCase.status === "found";
+  const prevFound = useRef(false);
+  useEffect(() => {
+    if (found && !prevFound.current) {
+      mapRef.current?.flyTo({
+        center: [activeCase.hiddenTrueLng, activeCase.hiddenTrueLat],
+        zoom: 14,
+        duration: 2000,
+        essential: true,
+      });
+    }
+    prevFound.current = found;
+  }, [found, activeCase.hiddenTrueLat, activeCase.hiddenTrueLng]);
 
   if (!TOKEN) {
     return (
@@ -220,6 +236,11 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
         selectedId={selectedTeam}
         onSelect={(id) => setSelectedTeam((cur) => (cur === id ? null : id))}
       />
+
+      {/* Ground truth — rendered ONLY after the find (see CONTRACTS §Found) */}
+      {found && (
+        <FoundMarker lat={activeCase.hiddenTrueLat} lng={activeCase.hiddenTrueLng} />
+      )}
     </Map>
   );
 }

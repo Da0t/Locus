@@ -8,6 +8,7 @@ import { TipsFeed } from "./components/TipsFeed";
 import { StatusBar } from "./components/StatusBar";
 import { CommandConsole } from "./components/voice/CommandConsole";
 import { Toaster } from "./components/Toaster";
+import { FoundOverlay } from "./components/FoundOverlay";
 import { Button } from "./components/ui/button";
 
 function Wordmark() {
@@ -108,6 +109,7 @@ export default function App() {
           </div>
         </aside>
       </div>
+      <FoundOverlay activeCase={activeCase} />
       <Toaster />
     </main>
   );
