@@ -24,6 +24,11 @@ export const addTip = mutation({
       caseId: args.caseId,
       tipId,
     });
+    // Event clock: embed + vector-search for a corroborating prior tip (W1).
+    await ctx.scheduler.runAfter(0, internal.corroborate.embedTip, {
+      tipId,
+      caseId: args.caseId,
+    });
     return tipId;
   },
 });

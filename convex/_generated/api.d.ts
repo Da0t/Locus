@@ -14,6 +14,7 @@ import type * as agents_intent from "../agents/intent.js";
 import type * as agents_status from "../agents/status.js";
 import type * as cases from "../cases.js";
 import type * as commands from "../commands.js";
+import type * as corroborate from "../corroborate.js";
 import type * as intel from "../intel.js";
 import type * as lib_contracts from "../lib/contracts.js";
 import type * as lib_geo from "../lib/geo.js";
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   "agents/status": typeof agents_status;
   cases: typeof cases;
   commands: typeof commands;
+  corroborate: typeof corroborate;
   intel: typeof intel;
   "lib/contracts": typeof lib_contracts;
   "lib/geo": typeof lib_geo;
