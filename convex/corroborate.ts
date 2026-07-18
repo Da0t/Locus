@@ -16,7 +16,7 @@ import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import { respan } from "./agents/client";
 
-const MATCH_THRESHOLD = 0.8; // cosine score above which two tips corroborate
+const MATCH_THRESHOLD = 0.6; // cosine score above which two tips corroborate — 0.8 was unreachable for real phrasing variance (text-embedding-3-small puts same-event reworded reports ~0.6-0.75)
 const CRED_BUMP = 0.1; // credibility gain when a tip is corroborated
 const CRED_CAP = 0.95; // corroborated intel is stronger, but never certain
 
