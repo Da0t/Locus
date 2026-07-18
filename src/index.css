@@ -150,9 +150,10 @@
   }
 }
 
+/* Toasts live top-center now — enter from above. */
 @keyframes toast-in {
   from {
-    transform: translateY(14px);
+    transform: translateY(-10px);
     opacity: 0;
   }
   to {
