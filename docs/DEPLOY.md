@@ -42,9 +42,13 @@ done, not aspiration.
    npx convex env set RESPAN_BASE_URL https://api.openai.com/v1
    ```
 
-   `RESPAN_BASE_URL` stays on the OpenAI URL until the Respan dashboard
-   provider is configured and smoke-tested (per `plans/W7.md`). No
-   `RESPAN_MODEL` was set locally, so none is set on cloud.
+   **Decision (2026-07-18): Respan's gateway is not used.** OpenAI
+   simulates it — `RESPAN_BASE_URL` is permanently
+   `https://api.openai.com/v1` and `RESPAN_API_KEY` is an OpenAI key. The
+   env indirection in `convex/agents/client.ts` makes this a pure config
+   choice; no code changes. Do NOT flip to `https://api.respan.ai/api/`.
+   No `RESPAN_MODEL` was set locally, so the client's default
+   (`gpt-4o-mini`) applies.
 
 3. Smoke test the cloud backend:
 
