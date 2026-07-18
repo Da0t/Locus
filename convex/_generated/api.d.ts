@@ -18,6 +18,7 @@ import type * as intel from "../intel.js";
 import type * as lib_contracts from "../lib/contracts.js";
 import type * as lib_geo from "../lib/geo.js";
 import type * as planner from "../planner.js";
+import type * as presence from "../presence.js";
 import type * as profiles from "../profiles.js";
 import type * as scenario from "../scenario.js";
 import type * as sim from "../sim.js";
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   "lib/contracts": typeof lib_contracts;
   "lib/geo": typeof lib_geo;
   planner: typeof planner;
+  presence: typeof presence;
   profiles: typeof profiles;
   scenario: typeof scenario;
   sim: typeof sim;
@@ -78,4 +80,5 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   agent: import("@convex-dev/agent/_generated/component.js").ComponentApi<"agent">;
+  presence: import("@convex-dev/presence/_generated/component.js").ComponentApi<"presence">;
 };
