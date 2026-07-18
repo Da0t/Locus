@@ -310,14 +310,87 @@ function runOneWalk(
 }
 
 // ---------------------------------------------------------------------------
+// Anchors — credible tips become walk starting points
+// ---------------------------------------------------------------------------
+
+/**
+ * A walk anchor: a point the subject was credibly at, `sinceMin` sim-minutes
+ * ago. The LKP is always an anchor; a credible tip is an updated last-known
+ * point, so walks start there too. Without this, every walk starts at the
+ * LKP and tips can only re-weight endpoints that happen to land near them —
+ * probability mass never actually reaches a distant sighting.
+ */
+type Anchor = { lat: number; lng: number; sinceMin: number; weight: number };
+
+/** LKP plus every tip whose credibility x weight clears the anchor bar. */
+function buildAnchors(
+  caseDoc: Doc<"cases">,
+  tips: Doc<"tips">[],
+  simClockMin: number,
+): Anchor[] {
+  const anchors: Anchor[] = [
+    {
+      lat: caseDoc.lastKnownLat,
+      lng: caseDoc.lastKnownLng,
+      sinceMin: simClockMin,
+      weight: 1.0,
+    },
+  ];
+  for (const t of tips) {
+    if (t.credibility * t.weight <= 0.2) continue;
+    anchors.push({
+      lat: t.lat,
+      lng: t.lng,
+      // The subject has only walked AWAY from a sighting for the time since
+      // it happened — fresher sighting => shorter walks => tighter lobe.
+      sinceMin: simClockMin - t.observedAtSimMin,
+      weight: 1.5 * t.credibility * t.weight,
+    });
+  }
+  return anchors;
+}
+
+/**
+ * Split `total` walks across anchors proportional to anchor weight
+ * (cumulative rounding keeps the sum exactly `total`), then guarantee every
+ * anchor at least one walk by taking from the largest allocation.
+ */
+function allocateWalks(anchors: Anchor[], total: number): number[] {
+  let weightSum = 0;
+  for (const a of anchors) weightSum += a.weight;
+  const counts: number[] = [];
+  let allocated = 0;
+  let cum = 0;
+  for (const a of anchors) {
+    cum += a.weight;
+    const upTo = Math.floor((total * cum) / weightSum);
+    counts.push(upTo - allocated);
+    allocated = upTo;
+  }
+  for (let i = 0; i < counts.length; i++) {
+    if (counts[i] >= 1) continue;
+    let big = 0;
+    for (let j = 1; j < counts.length; j++) {
+      if (counts[j] > counts[big]) big = j;
+    }
+    if (counts[big] > 1) {
+      counts[big] -= 1;
+      counts[i] += 1;
+    }
+  }
+  return counts;
+}
+
+// ---------------------------------------------------------------------------
 // runWalks
 // ---------------------------------------------------------------------------
 
 /**
  * Run SIM.WALKS_PER_HYPOTHESIS Monte Carlo walks per active hypothesis
- * (weight >= 0.02, skip otherwise) and accumulate an UNNORMALIZED
- * gridSize x gridSize heatmap indexed [y][x], SW origin. Budget: at most
- * 600 walks (150/hypothesis x 4 hypotheses design point) x at most 96 steps.
+ * (weight >= 0.02, skip otherwise), distributed across the LKP and
+ * credible-tip anchors, and accumulate an UNNORMALIZED gridSize x gridSize
+ * heatmap indexed [y][x], SW origin. Budget: at most 600 walks
+ * (150/hypothesis x 4 hypotheses design point) x at most 96 steps.
  */
 export function runWalks(
   caseDoc: Doc<"cases">,
@@ -336,9 +409,11 @@ export function runWalks(
   };
   const terrain = buildTerrainMap(caseDoc);
 
-  const nSteps = clamp(Math.floor(simClockMin / SIM.WALK_STEP_SIM_MIN), 12, 96);
-  const tailCount = Math.ceil(nSteps * 0.25);
-  const tailStart = Math.max(0, nSteps - tailCount);
+  // Credible tips are walk ANCHORS (updated last-known points): a share of
+  // each hypothesis's walk budget STARTS at them, so mass actually reaches a
+  // distant sighting. The endpoint-proximity boost below then sharpens it.
+  const anchors = buildAnchors(caseDoc, tips, simClockMin);
+  const walkCounts = allocateWalks(anchors, SIM.WALKS_PER_HYPOTHESIS);
 
   // Tip conditioning: only tips with weight * credibility > 0.1 participate.
   const activeTips = tips.filter((t) => t.weight * t.credibility > 0.1);
@@ -351,35 +426,45 @@ export function runWalks(
       if (v > maxAffinity) maxAffinity = v;
     }
 
-    for (let w = 0; w < SIM.WALKS_PER_HYPOTHESIS; w++) {
-      const { path, endLat, endLng } = runOneWalk(
-        caseDoc.lastKnownLat,
-        caseDoc.lastKnownLng,
-        h,
-        terrain,
-        maxAffinity,
-        nSteps,
-        stepKm,
-        bounds,
-        gridSize,
-        rng,
+    for (let a = 0; a < anchors.length; a++) {
+      const anchor = anchors[a];
+      const nSteps = clamp(
+        Math.floor(anchor.sinceMin / SIM.WALK_STEP_SIM_MIN),
+        4,
+        96,
       );
+      const tailStart = Math.max(0, nSteps - Math.ceil(nSteps * 0.25));
 
-      let walkWeight = 1;
-      for (const tip of activeTips) {
-        const d = distanceKm(endLat, endLng, tip.lat, tip.lng);
-        walkWeight *=
-          1 + 2 * tip.credibility * tip.weight * Math.exp(-(d * d) / (2 * 0.6 * 0.6));
-      }
+      for (let w = 0; w < walkCounts[a]; w++) {
+        const { path, endLat, endLng } = runOneWalk(
+          anchor.lat,
+          anchor.lng,
+          h,
+          terrain,
+          maxAffinity,
+          nSteps,
+          stepKm,
+          bounds,
+          gridSize,
+          rng,
+        );
 
-      const depositBase = h.weight * walkWeight;
-      const endpointCell = path[path.length - 1];
-      heatmap[endpointCell.y][endpointCell.x] += depositBase * 1.0;
+        let walkWeight = 1;
+        for (const tip of activeTips) {
+          const d = distanceKm(endLat, endLng, tip.lat, tip.lng);
+          walkWeight *=
+            1 + 2 * tip.credibility * tip.weight * Math.exp(-(d * d) / (2 * 0.6 * 0.6));
+        }
 
-      // Tail = last 25% of steps (ceil), excluding the endpoint itself.
-      for (let i = tailStart; i < path.length - 1; i++) {
-        const c = path[i];
-        heatmap[c.y][c.x] += depositBase * 0.15;
+        const depositBase = h.weight * walkWeight;
+        const endpointCell = path[path.length - 1];
+        heatmap[endpointCell.y][endpointCell.x] += depositBase * 1.0;
+
+        // Tail = last 25% of steps (ceil), excluding the endpoint itself.
+        for (let i = tailStart; i < path.length - 1; i++) {
+          const c = path[i];
+          heatmap[c.y][c.x] += depositBase * 0.15;
+        }
       }
     }
   }
