@@ -22,6 +22,7 @@ import { TeamMarkers } from "./map/TeamMarkers";
 import { TipMarkers } from "./map/TipMarkers";
 import { TeamRoster } from "./map/TeamRoster";
 import { FoundMarker } from "./map/FoundMarker";
+import { Legend } from "./map/Legend";
 import { errorMessage, toast } from "../lib/toast";
 
 const TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined;
@@ -149,7 +150,7 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
               "match",
               ["get", "kind"],
               "steep", 0.35,
-              0.25,
+              0.4,
             ],
           }}
         />
@@ -172,10 +173,10 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
           paint={{
             "heatmap-weight": ["get", "weight"],
             "heatmap-intensity": [
-              "interpolate", ["linear"], ["zoom"], 10, 0.9, 14, 1.6,
+              "interpolate", ["linear"], ["zoom"], 10, 0.85, 14, 1.4,
             ],
             "heatmap-radius": [
-              "interpolate", ["linear"], ["zoom"], 10, 9, 12, 20, 14, 48,
+              "interpolate", ["linear"], ["zoom"], 10, 8, 12, 14, 14, 40,
             ],
             "heatmap-color": [
               "interpolate", ["linear"], ["heatmap-density"],
@@ -237,6 +238,9 @@ export function MapView({ activeCase }: { activeCase: Doc<"cases"> }) {
         selectedId={selectedTeam}
         onSelect={(id) => setSelectedTeam((cur) => (cur === id ? null : id))}
       />
+
+      {/* 8 — legend: the map's vocabulary, bottom-left */}
+      <Legend />
 
       {/* Ground truth — rendered ONLY after the find (see CONTRACTS §Found) */}
       {found && (
