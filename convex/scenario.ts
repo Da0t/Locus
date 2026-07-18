@@ -348,3 +348,26 @@ export const dripNext = internalMutation({
     }
   },
 });
+
+// Public: wipe the world back to the "Open demo case" splash. For rehearsals
+// and between-pitch resets; deletes every row of every demo table. Pending
+// scheduled ticks/drips self-terminate on their missing-row guards.
+export const resetDemo = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const tables = [
+      "commands",
+      "tips",
+      "grids",
+      "teams",
+      "hypotheses",
+      "simState",
+      "cases",
+    ] as const;
+    for (const table of tables) {
+      for (const row of await ctx.db.query(table).collect()) {
+        await ctx.db.delete(row._id);
+      }
+    }
+  },
+});
