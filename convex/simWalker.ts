@@ -209,14 +209,15 @@ function routeTravelMove(
 type WalkResult = { path: Cell[]; endLat: number; endLng: number };
 
 /**
- * Simulate one walk of `nSteps` steps starting at the case's last-known
- * point. Persistent state across steps is just `heading` — backtrack is
+ * Simulate one walk of `nSteps` steps starting at `startLat`/`startLng`.
+ * Persistent state across steps is just `heading` — backtrack is
  * resolved as a heading reversal (heading + 180 +/- 20 deg) rather than a
  * literal return-to-previous-cell, so no separate prevCell tracking is
  * needed (per the task's ambiguity resolution).
  */
 function runOneWalk(
-  caseDoc: Doc<"cases">,
+  startLat: number,
+  startLng: number,
   h: Doc<"hypotheses">,
   terrain: Map<string, StoredTerrainKind>,
   maxAffinity: number,
@@ -226,8 +227,8 @@ function runOneWalk(
   gridSize: number,
   rng: () => number,
 ): WalkResult {
-  let lat = caseDoc.lastKnownLat;
-  let lng = caseDoc.lastKnownLng;
+  let lat = startLat;
+  let lng = startLng;
   let heading = uniform(rng, 0, 360);
   const path: Cell[] = [];
 
@@ -352,7 +353,8 @@ export function runWalks(
 
     for (let w = 0; w < SIM.WALKS_PER_HYPOTHESIS; w++) {
       const { path, endLat, endLng } = runOneWalk(
-        caseDoc,
+        caseDoc.lastKnownLat,
+        caseDoc.lastKnownLng,
         h,
         terrain,
         maxAffinity,
