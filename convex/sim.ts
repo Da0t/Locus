@@ -1,8 +1,8 @@
 // OWNER: Person A (sim core). The fast clock.
 // Real engine: age tips toward zero, size the search radius from hypothesis
 // mobility, run the Monte Carlo walker (Task 1), suppress cells rescue teams
-// have already searched, smooth + normalize, and patch simState exactly once
-// per tick.
+// have already searched, smooth + normalize, patch simState once per tick
+// (found tick adds one extra patch).
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
@@ -132,16 +132,11 @@ async function moveAndSearchTeams(
   ctx: MutationCtx,
   tick: number,
   minutesPerTick: number,
-  caseDoc: Doc<"cases">,
+  bounds: Bounds,
+  gridSize: number,
   teams: Doc<"teams">[],
   grids: Doc<"grids">[],
 ): Promise<Doc<"grids">[]> {
-  const bounds: Bounds = {
-    swLat: caseDoc.boundsSwLat,
-    swLng: caseDoc.boundsSwLng,
-    neLat: caseDoc.boundsNeLat,
-    neLng: caseDoc.boundsNeLng,
-  };
   const stepKm = (TEAM_SPEED_KM_H * minutesPerTick) / 60;
   const newlySearched: Doc<"grids">[] = [];
 
@@ -160,7 +155,7 @@ async function moveAndSearchTeams(
     }
 
     if (team.status === "enroute") {
-      const target = cellCenter(bounds, caseDoc.gridSize, { x: grid.x, y: grid.y });
+      const target = cellCenter(bounds, gridSize, { x: grid.x, y: grid.y });
       const remainingKm = distanceKm(team.lat, team.lng, target.lat, target.lng);
       if (remainingKm < 0.1 || stepKm >= remainingKm) {
         // Arrival tick: snap exactly to the cell center.
@@ -206,6 +201,13 @@ export const tick = internalMutation({
     // ---- Real tick body ----
     const caseDoc = await ctx.db.get(caseId);
     if (!caseDoc || caseDoc.status !== "active") return; // not active: stop, no reschedule
+
+    const bounds: Bounds = {
+      swLat: caseDoc.boundsSwLat,
+      swLng: caseDoc.boundsSwLng,
+      neLat: caseDoc.boundsNeLat,
+      neLng: caseDoc.boundsNeLng,
+    };
 
     const hypotheses = await ctx.db
       .query("hypotheses")
@@ -261,7 +263,8 @@ export const tick = internalMutation({
       ctx,
       tick,
       s.minutesPerTick,
-      caseDoc,
+      bounds,
+      caseDoc.gridSize,
       teams,
       grids,
     );
@@ -271,12 +274,6 @@ export const tick = internalMutation({
     // Task 5: found check. If any cell newly searched this tick is the
     // hidden true location, stop the world: freeze simState and mark the
     // case found. Coordinates never leave this computation.
-    const bounds: Bounds = {
-      swLat: caseDoc.boundsSwLat,
-      swLng: caseDoc.boundsSwLng,
-      neLat: caseDoc.boundsNeLat,
-      neLng: caseDoc.boundsNeLng,
-    };
     const trueCell = latLngToCell(
       bounds,
       caseDoc.gridSize,
