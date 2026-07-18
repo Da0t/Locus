@@ -28,6 +28,25 @@ around it with honest 100–400 m noise.
 
 ---
 
+## Cloud timing notes (W7, measured 2026-07-18 — not yet a phone-timed rehearsal)
+
+Demoing from **https://locus-iota-orcin.vercel.app** (cloud Convex), not
+localhost. Measured on a full automated run-through on prod:
+
+- **Tick cadence ~1.1 s** (local anonymous backend was ~6 s). Everything
+  lands faster and tighter than local rehearsals — recalibrate your pacing
+  against prod, not localhost.
+- Found fired **inside the 45–75 s design window** after *Start scripted
+  tips* (single run; phone-timed numbers should replace this).
+- The tip drip's afterSec chain is wall-clock, so tip landings match the
+  beat sheet on cloud unchanged.
+- Reset between rehearsals: `npx convex run scenario:resetDemo` (targets
+  the cloud deployment from this repo checkout).
+- Pre-flight difference on cloud: no `npm run dev` / `npx convex dev`
+  needed — just open the URL. Everything else in pre-flight still applies.
+
+---
+
 ## The beat sheet
 
 Times are cumulative wall-clock. The tip drip is authored to land its last tip
