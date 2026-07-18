@@ -64,9 +64,9 @@ export function FoundOverlay({ activeCase }: { activeCase: Doc<"cases"> }) {
         {/* W5: after-action debrief — written by internal.debrief.generate
             shortly after the found moment. Shimmer until it lands. */}
         <div className="mx-auto mt-6 max-w-2xl px-6 text-left">
-          {activeCase.debrief ? (
+          {debrief ? (
             <div className="whitespace-pre-line font-mono text-xs leading-relaxed text-white/80 md:text-sm">
-              {activeCase.debrief.split("\n").map((line, i) => {
+              {debrief.split("\n").map((line, i) => {
                 const m = line.match(/^([A-Z][A-Z ]+):\s*(.*)$/);
                 return m ? (
                   <p key={i}>
