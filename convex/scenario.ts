@@ -195,6 +195,10 @@ export const seedDemo = mutation({
       gridSize: GRID,
       terrainCells: buildTerrainCells(),
       landmarks: LANDMARKS,
+      // Maya is a known day hiker: only hiker-derived hypotheses apply —
+      // mobile hiker vs. injured/immobile hiker. Dementia/child would be
+      // wrong for this subject and must not pollute the panel or the sim.
+      profiles: ["hiker", "injured"],
       // Ground truth. The UI must never render this before the found moment.
       hiddenTrueLat: HIDDEN_TRUE.lat,
       hiddenTrueLng: HIDDEN_TRUE.lng,

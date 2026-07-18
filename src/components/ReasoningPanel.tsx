@@ -70,6 +70,12 @@ export function ReasoningPanel({ caseId }: { caseId: Id<"cases"> }) {
           LLM · re-weighs on intel
         </span>
       </div>
+      {sorted.length === 0 && (
+        <p className="rounded-md border border-dashed border-border p-3 text-[11px] leading-relaxed text-muted-foreground">
+          No subject profile yet. Hypotheses appear once we know who is
+          missing — they are derived from the subject facts, not preloaded.
+        </p>
+      )}
       {sorted.map((h, i) => {
         const leader = i === 0;
         return (

@@ -30,9 +30,14 @@ export const seedCase = mutation({
     ),
     minutesPerTick: v.number(),
     initialSimMin: v.number(), // how long the person has already been missing
+    // Which Koester hypotheses apply, derived from what we know about the
+    // subject. A hypothesis only exists once subject input warrants it —
+    // never show (or simulate) profiles that don't fit the person.
+    profiles: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const { teams, minutesPerTick, initialSimMin, ...caseFields } = args;
+    const { teams, minutesPerTick, initialSimMin, profiles, ...caseFields } =
+      args;
     const caseId = await ctx.db.insert("cases", {
       ...caseFields,
       status: "active" as const,
@@ -47,12 +52,16 @@ export const seedCase = mutation({
       heatmap: emptyHeatmap(args.gridSize),
     });
     const now = Date.now();
-    for (const p of Object.values(PROFILES)) {
+    const wanted = (profiles ?? Object.keys(PROFILES)).filter(
+      (k): k is keyof typeof PROFILES => k in PROFILES,
+    );
+    for (const key of wanted) {
+      const p = PROFILES[key];
       await ctx.db.insert("hypotheses", {
         caseId,
         profile: p.key,
-        weight: 1 / Object.keys(PROFILES).length,
-        reasoning: `Initial prior. ${p.blurb}`,
+        weight: 1 / wanted.length,
+        reasoning: `Seeded from subject facts. ${p.blurb}`,
         behaviorWeights: p.behaviorWeights,
         mobilityKmH: p.mobilityKmH,
         terrainAffinity: p.terrainAffinity,

@@ -74,6 +74,7 @@ export function CommandConsole({ caseId }: { caseId: Id<"cases"> }) {
   } = useSpeechRecognition();
 
   const silenceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Submit whatever is in the field (typed, dictated, or Voice-Cursor'd).
   const send = useCallback(
@@ -85,9 +86,24 @@ export function CommandConsole({ caseId }: { caseId: Id<"cases"> }) {
       resetTranscript();
       void SpeechRecognition.stopListening(); // one command per mic activation
       if (silenceTimer.current) clearTimeout(silenceTimer.current);
+      inputRef.current?.focus(); // keep dictation landing here
     },
     [submit, caseId, resetTranscript],
   );
+
+  // "/" from anywhere refocuses the console — clicking the map steals focus
+  // and system dictation (Voice Cursor) types into whatever is focused.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "/") return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
+      e.preventDefault();
+      inputRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const toggleMic = () => {
     if (listening) {
@@ -248,12 +264,15 @@ export function CommandConsole({ caseId }: { caseId: Id<"cases"> }) {
         })}
       </div>
 
-      {/* Input — Voice Cursor dictates here at system level; autofocus matters */}
+      {/* Input — Voice Cursor dictates here at system level. Dictation lands
+          wherever focus is, so focus is defended: autofocus on mount, "/"
+          refocuses from anywhere (map clicks steal focus), refocus after send. */}
       <div className="px-3 pb-3">
         <Input
+          ref={inputRef}
           autoFocus
           className={stage ? "h-11 text-base" : undefined}
-          placeholder="Speak or type a command…"
+          placeholder="Speak or type a command…  ( / to focus )"
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send(text)}

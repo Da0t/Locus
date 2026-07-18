@@ -3,7 +3,8 @@ import { Marker } from "react-map-gl/mapbox";
 
 export function LkpMarker({ lat, lng }: { lat: number; lng: number }) {
   return (
-    <Marker latitude={lat} longitude={lng} anchor="center" style={{ zIndex: 1 }}>
+    // zIndex 2: the LKP label must read over team chips staged on top of it.
+    <Marker latitude={lat} longitude={lng} anchor="center" style={{ zIndex: 2 }}>
       <div className="pointer-events-none relative flex h-6 w-6 items-center justify-center">
         <span
           className="absolute h-6 w-6 rounded-full border-2 border-red-500"
