@@ -20,6 +20,9 @@ Carlo simulation turns them into a live probability heatmap and search-team
 assignments, and the coordinator drives it by voice. Decision support for
 trained searchers — never claim it "finds people on its own."
 
+> 🗺️ **Full architecture map: [README.md → Architecture](README.md#architecture)** — diagram,
+> data model, module guide, control flows, and gotchas. Mapped 2026-07-28 via `/cartographer`.
+
 ## Architecture invariant
 
 **The LLM reasons, math does the searching, voice drives it.** Two clocks:
